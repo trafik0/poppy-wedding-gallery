@@ -4918,7 +4918,7 @@ function updateDueBadge(){
 // karena renderSettings() langsung mengakses ROLE_LABELS di template literalnya.
 var AUTH_KEY='_pwg_user';
 var ROLE_LABELS={superadmin:'Super Admin',admin:'Admin',shareholder:'Shareholder'};
-var SHAREHOLDER_PAGES=['dashboard','pemasukan','rekap'];
+var SHAREHOLDER_PAGES=['dashboard','pemasukan','rekap','settings'];
 var _cu=null; // current user object
 
 document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
@@ -5039,12 +5039,8 @@ function _filterSidebar(){
   if(fab)fab.style.display=isSH?'none':'';
 }
 
-// Check existing session
-(function(){
-  const raw=localStorage.getItem(AUTH_KEY);
-  if(raw){try{const u=JSON.parse(raw);const found=_getUsers().find(x=>x.id===u.id);if(found){_applyUser(found);return;}}catch(_){}}
-  _showGate();
-})();
+// Selalu tampilkan gate saat buka app — tidak ada auto-login
+_showGate();
 
 window.doLogin=function(){
   const users=_getUsers();
