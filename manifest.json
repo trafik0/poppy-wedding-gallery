@@ -1,0 +1,24 @@
+{
+  "name": "Poppy Wedding Gallery — Sewa Baju Adat",
+  "short_name": "Poppy Wedding",
+  "description": "Sistem manajemen sewa baju adat Poppy Wedding Gallery Cibubur",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff1f2",
+  "theme_color": "#be123c",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

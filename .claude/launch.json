@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "rentalku",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": ["-c", "cd '/Users/950416/Claude Workspace/rentalku' && exec /usr/bin/python3 -m http.server 3400"],
+      "port": 3400
+    }
+  ]
+}
