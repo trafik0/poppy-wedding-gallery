@@ -2850,46 +2850,32 @@ function renderSettings(){
     <div class="mb-4 bg-rose-50 border border-rose-200 rounded-2xl p-4 text-sm text-rose-700">
       <i class="fas fa-info-circle mr-1.5"></i>Kelola semua pilihan dropdown. Warna dan Lokasi Rak bisa diatur di sini.
     </div>
-    <!-- Akun Kamu (semua user) -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
-      <div class="flex items-center gap-3 mb-4">
-        <div style="width:36px;height:36px;border-radius:10px;background:${_cu?.color||'#be123c'};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;flex-shrink:0;">${_cu?.avatar||'?'}</div>
-        <div class="flex-1">
-          <div class="font-semibold text-gray-800 text-sm">${_cu?.name||'—'}</div>
-          <div class="text-xs text-gray-400">${ROLE_LABELS[_cu?.role]||_cu?.role||'—'}</div>
-        </div>
-      </div>
-      <div class="flex gap-2">
-        <button onclick="openChangePassword('${_cu?.id}')" class="flex-1 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-sm font-semibold rounded-xl border border-rose-100">
-          <i class="fas fa-key mr-1.5"></i>Ganti Password
-        </button>
-        <button onclick="doLogout()" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl">
-          <i class="fas fa-sign-out-alt mr-1.5"></i>Logout
-        </button>
-      </div>
-    </div>
-    <!-- Manajemen Pengguna (superadmin only) -->
-    ${(_cu&&_cu.role==='superadmin')?`
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-9 h-9 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-users-gear text-sm"></i></div>
-        <div><div class="font-semibold text-gray-800 text-sm">Manajemen Pengguna</div><div class="text-xs text-gray-400">Kelola akses & password semua akun</div></div>
-      </div>
-      ${(function(){
-        const users=_getUsers();
-        return users.map(function(u){
+    ${(function(){
+      if(!_cu||_cu.role!=='superadmin')return'';
+      const users=_getUsers();
+      return '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">'+
+        '<div class="flex items-center gap-3 mb-4">'+
+          '<div class="w-9 h-9 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-users text-sm"></i></div>'+
+          '<div><div class="font-semibold text-gray-800 text-sm">Akun & Keamanan</div><div class="text-xs text-gray-400">Kelola pengguna dan password</div></div>'+
+        '</div>'+
+        users.map(function(u){
           const isMe=_cu&&_cu.id===u.id;
           return '<div class="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">'+
-            '<div style="width:34px;height:34px;border-radius:9px;background:'+u.color+';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0;">'+u.avatar+'</div>'+
+            '<div style="width:36px;height:36px;border-radius:10px;background:'+u.color+';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;flex-shrink:0;">'+u.avatar+'</div>'+
             '<div class="flex-1 min-w-0">'+
-              '<div class="text-sm font-medium text-gray-800">'+u.name+(isMe?' <span class="text-xs text-rose-400">(kamu)</span>':'')+'</div>'+
+              '<div class="text-sm font-semibold text-gray-800">'+u.name+(isMe?' <span class="text-xs font-normal text-rose-500">(kamu)</span>':'')+'</div>'+
               '<div class="text-xs text-gray-400">'+(ROLE_LABELS[u.role]||u.role)+'</div>'+
             '</div>'+
-            '<button onclick="openChangePassword(\''+u.id+'\')" class="text-xs text-purple-600 hover:underline font-medium"><i class="fas fa-key mr-1"></i>Password</button>'+
+            '<button onclick="openChangePassword(\''+u.id+'\')" class="text-xs text-rose-600 hover:underline font-medium"><i class="fas fa-key mr-1"></i>Ganti Password</button>'+
           '</div>';
-        }).join('');
-      })()}
-    </div>`:''}
+        }).join('')+
+        '<div class="mt-4 pt-3 border-t border-gray-100">'+
+          '<button onclick="doLogout()" class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl">'+
+            '<i class="fas fa-sign-out-alt mr-1.5"></i>Logout dari Akun Ini'+
+          '</button>'+
+        '</div>'+
+      '</div>';
+    })()}
 
     <!-- Backup & Restore -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
@@ -4918,7 +4904,7 @@ function updateDueBadge(){
 // karena renderSettings() langsung mengakses ROLE_LABELS di template literalnya.
 var AUTH_KEY='_pwg_user';
 var ROLE_LABELS={superadmin:'Super Admin',admin:'Admin',shareholder:'Shareholder'};
-var SHAREHOLDER_PAGES=['dashboard','pemasukan','rekap','settings'];
+var SHAREHOLDER_PAGES=['dashboard','pemasukan','rekap'];
 var _cu=null; // current user object
 
 document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
