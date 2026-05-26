@@ -108,6 +108,7 @@
       <div id="mobile-page-title" class="font-semibold text-base leading-tight truncate">Beranda</div>
     </div>
     <div id="mobile-page-actions" class="flex items-center gap-1.5"></div>
+    <div id="cloud-indicator" title="Status cloud sync" style="width:8px;height:8px;border-radius:50%;background:#fbbf24;flex-shrink:0;" title="Menghubungkan ke cloud..."></div>
   </div>
 </header>
 
@@ -281,44 +282,86 @@ const state = {
 // ═══════════════════════════════════
 // STORAGE
 // ═══════════════════════════════════
+// ── Supabase cloud sync ──
+const SUPA_URL='https://fiutfrocbwkymnysmezf.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpdXRmcm9jYndreW1ueXNtZXpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MDI1ODYsImV4cCI6MjA5NTM3ODU4Nn0.InxGNSsb_iis3t6RKl2s6UDClUCsp5FhsDUIrXO_sWY';
+const SUPA_HDR={'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'};
+let _supaOk=false; // true setelah berhasil connect
+function _setCloudDot(status){
+  // status: 'ok'=hijau, 'sync'=kuning, 'off'=merah
+  const el=document.getElementById('cloud-indicator');
+  if(!el)return;
+  const colors={ok:'#4ade80',sync:'#fbbf24',off:'#f87171'};
+  el.style.background=colors[status]||colors.sync;
+  el.title={ok:'Cloud sync aktif ✅',sync:'Menyinkron...',off:'Offline – data tersimpan lokal'}[status]||'';
+}
+
 const DB = {
   KEY:'rentalku_v3',
+  _snapshot(){
+    return {
+      items:state.items, customers:state.customers,
+      orders:state.orders, expenses:state.expenses, lists:state.lists, settings:state.settings,
+      orderCounter:state.orderCounter, bookings:state.bookings, bookingCounter:state.bookingCounter,
+      servicePrices:state.servicePrices, employees:state.employees, attendance:state.attendance,
+      employeeCounter:state.employeeCounter, attendanceCounter:state.attendanceCounter,
+      _savedAt: new Date().toISOString()
+    };
+  },
   save(){
     try{
-      localStorage.setItem(this.KEY, JSON.stringify({
-        items:state.items, customers:state.customers,
-        orders:state.orders, expenses:state.expenses, lists:state.lists, settings:state.settings,
-        orderCounter:state.orderCounter, bookings:state.bookings, bookingCounter:state.bookingCounter,
-        servicePrices:state.servicePrices, employees:state.employees, attendance:state.attendance,
-        employeeCounter:state.employeeCounter, attendanceCounter:state.attendanceCounter
-      }));
+      const snap=this._snapshot();
+      localStorage.setItem(this.KEY, JSON.stringify(snap));
+      // Push ke cloud (fire & forget)
+      _setCloudDot('sync');
+      fetch(SUPA_URL+'/rest/v1/app_data',{
+        method:'POST',
+        headers:{...SUPA_HDR,'Prefer':'resolution=merge-duplicates'},
+        body:JSON.stringify({id:'main',data:snap,updated_at:snap._savedAt})
+      }).then(r=>{if(r.ok){_supaOk=true;_setCloudDot('ok');}else{_setCloudDot('off');}}).catch(()=>{_setCloudDot('off');});
     } catch(e){ showToast('Storage penuh! Hapus beberapa foto item.','t-err',5000); }
+  },
+  async cloudLoad(){
+    try{
+      const r=await fetch(SUPA_URL+'/rest/v1/app_data?id=eq.main&select=data,updated_at',{headers:SUPA_HDR});
+      if(!r.ok)return;
+      const rows=await r.json();
+      if(!rows[0]?.data){_supaOk=true;_setCloudDot('ok');return;}
+      const cloud=rows[0].data;
+      const localAt=JSON.parse(localStorage.getItem(this.KEY)||'{}')._savedAt||'';
+      const cloudAt=rows[0].updated_at||'';
+      if(cloudAt>localAt){
+        // Cloud lebih baru — load dan re-render
+        this._apply(cloud);
+        localStorage.setItem(this.KEY,JSON.stringify(cloud));
+        _supaOk=true;_setCloudDot('ok');
+        navigate(state.page||'home');
+        showToast('Data disinkron dari cloud ☁️','t-info',2500);
+      } else {
+        _supaOk=true;_setCloudDot('ok');
+      }
+    }catch(e){_setCloudDot('off');}
+  },
+  _apply(d){
+    state.items     = (d.items||[]).map(it=>({...it,price:Math.round(it.price||0),deposit:Math.round(it.deposit||0)}));
+    state.customers = d.customers||[];
+    state.orders    = d.orders||[];
+    state.expenses  = d.expenses||[];
+    if(d.lists){Object.keys(DEFAULT_LISTS).forEach(k=>{state.lists[k]=d.lists[k]||DEFAULT_LISTS[k];});if(d.lists.bookingCategories)state.lists.bookingCategories=d.lists.bookingCategories;}
+    if(d.settings)state.settings={...state.settings,...d.settings};
+    if(d.bookings)state.bookings=d.bookings;
+    if(typeof d.bookingCounter==='number')state.bookingCounter=d.bookingCounter;
+    if(d.servicePrices)state.servicePrices=d.servicePrices;
+    if(d.employees)state.employees=d.employees;
+    if(d.attendance)state.attendance=d.attendance;
+    if(typeof d.employeeCounter==='number')state.employeeCounter=d.employeeCounter;
+    if(typeof d.attendanceCounter==='number')state.attendanceCounter=d.attendanceCounter;
+    if(typeof d.orderCounter==='number')state.orderCounter=d.orderCounter;
   },
   load(){
     const raw = localStorage.getItem(this.KEY) || localStorage.getItem('rentalku_v2');
-    if(raw){
-      const d = JSON.parse(raw);
-      state.items     = (d.items||[]).map(it=>({...it,price:Math.round(it.price||0),deposit:Math.round(it.deposit||0)}));
-      state.customers = d.customers || [];
-      state.orders    = d.orders    || [];
-      state.expenses  = d.expenses  || [];
-      if(d.lists){
-        Object.keys(DEFAULT_LISTS).forEach(k=>{
-          state.lists[k] = d.lists[k] || DEFAULT_LISTS[k];
-        });
-        if(d.lists.bookingCategories)state.lists.bookingCategories=d.lists.bookingCategories;
-        else if(!state.lists.bookingCategories)state.lists.bookingCategories=DEFAULT_LISTS.bookingCategories;
-      }
-      if(d.settings)state.settings={...state.settings,...d.settings};
-      if(d.bookings)state.bookings=d.bookings;
-      if(typeof d.bookingCounter==='number')state.bookingCounter=d.bookingCounter;
-      if(d.servicePrices)state.servicePrices=d.servicePrices;
-      if(d.employees)state.employees=d.employees;
-      if(d.attendance)state.attendance=d.attendance;
-      if(typeof d.employeeCounter==='number')state.employeeCounter=d.employeeCounter;
-      if(typeof d.attendanceCounter==='number')state.attendanceCounter=d.attendanceCounter;
-      if(typeof d.orderCounter==='number')state.orderCounter=d.orderCounter;
-    } else { this.seed(); }
+    if(raw){ try{ this._apply(JSON.parse(raw)); }catch(_){} }
+    else { this.seed(); }
   },
   seed(){
     state.items = [
@@ -4809,6 +4852,9 @@ DB.load();
   navigate(last&&!skip.includes(last)?last:'home');
 })();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}
+
+// Sync dari cloud (async, tidak blokir UI)
+DB.cloudLoad();
 
 // ===== PASSWORD GATE =====
 (function(){
