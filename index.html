@@ -71,6 +71,33 @@
 <body class="bg-gray-100 font-sans text-gray-900">
 <div id="toast-wrap"></div>
 
+<!-- ===== PASSWORD GATE ===== -->
+<div id="auth-gate" style="display:none;position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#9f1239 0%,#be123c 50%,#e11d48 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;">
+  <div style="width:100%;max-width:360px;text-align:center;">
+    <div style="width:72px;height:72px;background:rgba(255,255,255,0.15);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;backdrop-filter:blur(8px);">
+      <i class="fas fa-heart" style="font-size:32px;color:white;"></i>
+    </div>
+    <h1 style="color:white;font-size:22px;font-weight:700;margin:0 0 4px;">Poppy Wedding Gallery</h1>
+    <p style="color:rgba(255,255,255,0.65);font-size:13px;margin:0 0 32px;">Masukkan password untuk melanjutkan</p>
+    <div style="background:rgba(255,255,255,0.12);border-radius:16px;padding:24px;backdrop-filter:blur(12px);">
+      <div style="position:relative;margin-bottom:12px;">
+        <input id="auth-input" type="password" placeholder="Password" autocomplete="current-password"
+          style="width:100%;padding:14px 48px 14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.95);font-size:15px;outline:none;box-sizing:border-box;color:#1f2937;"
+          onkeydown="if(event.key==='Enter')doLogin()"
+          oninput="document.getElementById('auth-err').style.display='none'">
+        <span onclick="(function(){const i=document.getElementById('auth-input');i.type=i.type==='password'?'text':'password';})()" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:#9ca3af;font-size:16px;">
+          <i class="fas fa-eye"></i>
+        </span>
+      </div>
+      <p id="auth-err" style="display:none;color:#fca5a5;font-size:13px;margin:0 0 12px;">Password salah, coba lagi.</p>
+      <button onclick="doLogin()" style="width:100%;padding:14px;background:white;color:#be123c;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">
+        Masuk &nbsp;<i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+    <p style="color:rgba(255,255,255,0.4);font-size:11px;margin-top:24px;">© Poppy Wedding Gallery</p>
+  </div>
+</div>
+
 <!-- ===== MOBILE HEADER ===== -->
 <header id="mobile-header" class="fixed top-0 left-0 right-0 z-30 bg-rose-700 text-white items-center px-4 shadow-lg" style="height:56px;padding-top:env(safe-area-inset-top)">
   <div class="flex items-center gap-3 h-full">
@@ -2725,6 +2752,16 @@ function renderSettings(){
     <div class="mb-4 bg-rose-50 border border-rose-200 rounded-2xl p-4 text-sm text-rose-700">
       <i class="fas fa-info-circle mr-1.5"></i>Kelola semua pilihan dropdown. Warna dan Lokasi Rak bisa diatur di sini.
     </div>
+    <!-- Logout -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-gray-100 text-gray-500 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-lock text-sm"></i></div>
+        <div><div class="font-semibold text-gray-800 text-sm">Keamanan Akun</div><div class="text-xs text-gray-400">Keluar dari sesi ini</div></div>
+      </div>
+      <button onclick="if(confirm('Yakin mau keluar?'))doLogout()" class="px-4 py-2 bg-rose-600 text-white text-sm font-semibold rounded-xl hover:bg-rose-700">
+        <i class="fas fa-sign-out-alt mr-1.5"></i>Logout
+      </button>
+    </div>
     <!-- Backup & Restore -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
       <div class="flex items-center gap-3 mb-4">
@@ -4772,6 +4809,36 @@ DB.load();
   navigate(last&&!skip.includes(last)?last:'home');
 })();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}
+
+// ===== PASSWORD GATE =====
+(function(){
+  const AUTH_KEY='_pwg_ok';
+  const PWD=atob('bWltaW5yYW5pbg=='); // miminranin
+  function showGate(){
+    const g=document.getElementById('auth-gate');
+    g.style.display='flex';
+    setTimeout(()=>document.getElementById('auth-input')?.focus(),100);
+  }
+  function hideGate(){
+    document.getElementById('auth-gate').style.display='none';
+  }
+  if(localStorage.getItem(AUTH_KEY)!=='1')showGate();
+  window.doLogin=function(){
+    const val=document.getElementById('auth-input').value;
+    if(val===PWD){
+      localStorage.setItem(AUTH_KEY,'1');
+      hideGate();
+    } else {
+      document.getElementById('auth-err').style.display='block';
+      document.getElementById('auth-input').value='';
+      document.getElementById('auth-input').focus();
+    }
+  };
+  window.doLogout=function(){
+    localStorage.removeItem(AUTH_KEY);
+    location.reload();
+  };
+})();
 </script>
 
 <!-- ===== BOTTOM NAV (mobile only) ===== -->
