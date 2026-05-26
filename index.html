@@ -395,32 +395,18 @@ const DB = {
     else { this.seed(); }
   },
   seed(){
-    state.items = [
-      {id:'i1',code:'BJ001',name:'Kebaya Jawa Premium',ageCategory:'Dewasa',gender:'Perempuan',province:'DI Yogyakarta (Yogyakarta)',color:'Hijau',rentalCategory:'Baju Adat',accessories:['Kalung'],category:'Kebaya',price:75000,deposit:150000,stock:3,sizes:'S, M, L',description:'Set lengkap kebaya + kain batik',condition:'Baik',storageLocation:'1-1 (Rak 1, Lt 1)',photo:'',lastUpdate:today(),active:true},
-      {id:'i2',code:'BJ002',name:'Beskap Pria + Blangkon',ageCategory:'Dewasa',gender:'Laki-laki',province:'DI Yogyakarta (Yogyakarta)',color:'Hitam',rentalCategory:'Baju Adat',accessories:['Topi'],category:'Beskap',price:60000,deposit:120000,stock:2,sizes:'M, L, XL',description:'Beskap hitam lengkap',condition:'Baik',storageLocation:'1-2 (Rak 2, Lt 1)',photo:'',lastUpdate:today(),active:true},
-      {id:'i3',code:'BA001',name:'Baju Adat Bali Pria',ageCategory:'Dewasa',gender:'Laki-laki',province:'Bali (Denpasar)',color:'Putih',rentalCategory:'Baju Adat',accessories:['Topi','Kalung'],category:'Bali',price:85000,deposit:200000,stock:4,sizes:'M, L',description:'Set pakaian adat Bali lengkap',condition:'Baik',storageLocation:'2-1 (Rak 1, Lt 2)',photo:'',lastUpdate:today(),active:true},
-      {id:'i4',code:'BA002',name:'Kebaya Bali Wanita',ageCategory:'Dewasa',gender:'Perempuan',province:'Bali (Denpasar)',color:'Merah',rentalCategory:'Baju Adat',accessories:['Kalung'],category:'Bali',price:80000,deposit:180000,stock:3,sizes:'S, M, L',description:'Kebaya + kamen + sabuk prada',condition:'Baik',storageLocation:'2-2 (Rak 2, Lt 2)',photo:'',lastUpdate:today(),active:true},
-      {id:'i5',code:'PS001',name:'Pakaian Adat Padang',ageCategory:'Dewasa',gender:'Laki-laki',province:'Sumatera Barat (Padang)',color:'Maroon',rentalCategory:'Baju Adat',accessories:['Topi','Pedang'],category:'Minang',price:90000,deposit:200000,stock:2,sizes:'M, L',description:'Baju pengantin Minang pria',condition:'Baik',storageLocation:'1-1 (Rak 1, Lt 1)',photo:'',lastUpdate:today(),active:true},
-    ];
-    state.customers = [
-      {id:'c1',code:'PLG-001',instansi:'Pribadi',name:'Rina Wulandari',namaGrup:'',phone:'081234567890',email:'rina@email.com',address:'Jl. Melati No. 5, Yogyakarta',notes:''},
-      {id:'c2',code:'PLG-002',instansi:'Sekolah',name:'SDN Harapan Bangsa',namaGrup:'Kelas 5A',phone:'085678901234',email:'',address:'Jl. Kenanga No. 12, Solo',notes:'Untuk pentas seni'},
-      {id:'c3',code:'PLG-003',instansi:'Korporat',name:'PT Nusantara Sejahtera',namaGrup:'Tim HRD',phone:'081398765432',email:'event@nusantara.co.id',address:'Jl. Sudirman No. 88, Jakarta',notes:'Event tahunan'},
-      {id:'c4',code:'PLG-004',instansi:'Grup',name:'Sanggar Tari Melati',namaGrup:'',phone:'089712345678',email:'',address:'Jl. Dahlia No. 3, Bandung',notes:'Reguler tiap bulan'},
-    ];
-    const d = n=>{const x=new Date();x.setDate(x.getDate()+n);return isoDate(x);};
-    state.orders = [
-      {id:'o1',num:'ORD-001',customerId:'c1',startDate:d(-1),endDate:d(1),
-       items:[{itemId:'i1',qty:1,price:75000,name:'Kebaya Jawa Premium'}],
-       totalRent:75000,deposit:150000,grandTotal:225000,payment:'BCA Transfer',status:'active',pic:'Mbak Mul',notes:'Pernikahan keluarga',createdAt:d(-1)+'T09:00:00',periods:1},
-      {id:'o2',num:'ORD-002',customerId:'c2',startDate:d(-6),endDate:d(-1),
-       items:[{itemId:'i2',qty:2,price:60000,name:'Beskap Pria'},{itemId:'i3',qty:3,price:85000,name:'Baju Adat Bali Pria'}],
-       totalRent:750000,deposit:840000,grandTotal:1590000,payment:'Tunai',status:'returned',returnDate:d(-1),returnCondition:'Baik',returnNotes:'',pic:'Ranin',notes:'Pentas seni sekolah',createdAt:d(-6)+'T11:30:00',periods:2},
-    ];
-    state.expenses = [
-      {id:'e1',date:d(0),description:'Laundry kebaya batch minggu ini',category:'Laundry',pos:'Baju Adat',amount:85000,notes:'',createdAt:new Date().toISOString()},
-      {id:'e2',date:d(-1),description:'Benang & jarum perbaikan',category:'Perawatan Baju',pos:'Baju Adat',amount:25000,notes:'',createdAt:d(-1)+'T10:00:00'},
-    ];
+    // Fresh start — tidak ada data dummy untuk production
+    state.items     = [];
+    state.customers = [];
+    state.orders    = [];
+    state.expenses  = [];
+    state.bookings  = [];
+    state.employees = [];
+    state.attendance= [];
+    state.orderCounter   = 0;
+    state.bookingCounter = 0;
+    state.employeeCounter= 0;
+    state.attendanceCounter=0;
     this.save();
   }
 };
@@ -2830,34 +2816,47 @@ function renderSettings(){
     <div class="mb-4 bg-rose-50 border border-rose-200 rounded-2xl p-4 text-sm text-rose-700">
       <i class="fas fa-info-circle mr-1.5"></i>Kelola semua pilihan dropdown. Warna dan Lokasi Rak bisa diatur di sini.
     </div>
-    <!-- Akun & Keamanan -->
+    <!-- Akun Kamu (semua user) -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
       <div class="flex items-center gap-3 mb-4">
-        <div class="w-9 h-9 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-users text-sm"></i></div>
-        <div><div class="font-semibold text-gray-800 text-sm">Akun & Keamanan</div><div class="text-xs text-gray-400">Kelola pengguna dan password</div></div>
+        <div style="width:36px;height:36px;border-radius:10px;background:${_cu?.color||'#be123c'};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;flex-shrink:0;">${_cu?.avatar||'?'}</div>
+        <div class="flex-1">
+          <div class="font-semibold text-gray-800 text-sm">${_cu?.name||'—'}</div>
+          <div class="text-xs text-gray-400">${ROLE_LABELS[_cu?.role]||_cu?.role||'—'}</div>
+        </div>
       </div>
-      ${(function(){
-        const users=_getUsers();
-        const isSA=_cu&&_cu.role==='superadmin';
-        return users.map(u=>{
-          const isMe=_cu&&_cu.id===u.id;
-          const canEdit=isSA||isMe;
-          return '<div class="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">'+
-            '<div style="width:36px;height:36px;border-radius:10px;background:'+u.color+';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;flex-shrink:0;">'+u.avatar+'</div>'+
-            '<div class="flex-1 min-w-0">'+
-              '<div class="text-sm font-semibold text-gray-800">'+u.name+(isMe?' <span class="text-xs font-normal text-rose-500">(kamu)</span>':'')+'</div>'+
-              '<div class="text-xs text-gray-400">'+(ROLE_LABELS[u.role]||u.role)+'</div>'+
-            '</div>'+
-            (canEdit?'<button onclick="openChangePassword(\''+u.id+'\')" class="text-xs text-rose-600 hover:underline font-medium"><i class="fas fa-key mr-1"></i>Ganti Password</button>':'<span class="text-xs text-gray-300">—</span>')+
-          '</div>';
-        }).join('');
-      })()}
-      <div class="mt-4 pt-3 border-t border-gray-100">
-        <button onclick="if(confirm('Yakin mau logout?'))doLogout()" class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl">
-          <i class="fas fa-sign-out-alt mr-1.5"></i>Logout dari Akun Ini
+      <div class="flex gap-2">
+        <button onclick="openChangePassword('${_cu?.id}')" class="flex-1 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-sm font-semibold rounded-xl border border-rose-100">
+          <i class="fas fa-key mr-1.5"></i>Ganti Password
+        </button>
+        <button onclick="doLogout()" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl">
+          <i class="fas fa-sign-out-alt mr-1.5"></i>Logout
         </button>
       </div>
     </div>
+    <!-- Manajemen Pengguna (superadmin only) -->
+    ${(_cu&&_cu.role==='superadmin')?`
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-9 h-9 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-users-gear text-sm"></i></div>
+        <div><div class="font-semibold text-gray-800 text-sm">Manajemen Pengguna</div><div class="text-xs text-gray-400">Kelola akses & password semua akun</div></div>
+      </div>
+      ${(function(){
+        const users=_getUsers();
+        return users.map(function(u){
+          const isMe=_cu&&_cu.id===u.id;
+          return '<div class="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">'+
+            '<div style="width:34px;height:34px;border-radius:9px;background:'+u.color+';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0;">'+u.avatar+'</div>'+
+            '<div class="flex-1 min-w-0">'+
+              '<div class="text-sm font-medium text-gray-800">'+u.name+(isMe?' <span class="text-xs text-rose-400">(kamu)</span>':'')+'</div>'+
+              '<div class="text-xs text-gray-400">'+(ROLE_LABELS[u.role]||u.role)+'</div>'+
+            '</div>'+
+            '<button onclick="openChangePassword(\''+u.id+'\')" class="text-xs text-purple-600 hover:underline font-medium"><i class="fas fa-key mr-1"></i>Password</button>'+
+          '</div>';
+        }).join('');
+      })()}
+    </div>`:''}
+
     <!-- Backup & Restore -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
       <div class="flex items-center gap-3 mb-4">
@@ -5018,7 +5017,18 @@ window.doLogin=function(){
 window.doLogout=function(){
   localStorage.removeItem(AUTH_KEY);
   _cu=null;
-  location.reload();
+  _selectedUserId=null;
+  // Reset header avatar
+  const av=document.getElementById('hdr-user-avatar');
+  if(av)av.style.display='none';
+  // Restore semua sidebar item
+  document.querySelectorAll('.sidebar-item[data-page]').forEach(el=>el.style.display='');
+  const fab=document.getElementById('fab-btn');
+  if(fab)fab.style.display='';
+  // Kembali ke gate step 1 tanpa reload
+  gateBack();
+  _renderGateUsers();
+  _showGate();
 };
 window.getCurrentUser=function(){return _cu;};
 window.openChangePassword=function(uid){
