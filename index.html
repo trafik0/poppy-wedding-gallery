@@ -5063,19 +5063,7 @@ window.doLogin=function(){
 };
 window.doLogout=function(){
   localStorage.removeItem(AUTH_KEY);
-  _cu=null;
-  _selectedUserId=null;
-  // Reset header avatar
-  const av=document.getElementById('hdr-user-avatar');
-  if(av)av.style.display='none';
-  // Restore semua sidebar item
-  document.querySelectorAll('.sidebar-item[data-page]').forEach(el=>el.style.display='');
-  const fab=document.getElementById('fab-btn');
-  if(fab)fab.style.display='';
-  // Kembali ke gate step 1 tanpa reload
-  gateBack();
-  _renderGateUsers();
-  _showGate();
+  location.reload();
 };
 window.getCurrentUser=function(){return _cu;};
 window.openChangePassword=function(uid){
