@@ -72,29 +72,51 @@
 <div id="toast-wrap"></div>
 
 <!-- ===== PASSWORD GATE ===== -->
-<div id="auth-gate" style="display:none;position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#9f1239 0%,#be123c 50%,#e11d48 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;">
-  <div style="width:100%;max-width:360px;text-align:center;">
-    <div style="width:72px;height:72px;background:rgba(255,255,255,0.15);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;backdrop-filter:blur(8px);">
-      <i class="fas fa-heart" style="font-size:32px;color:white;"></i>
-    </div>
-    <h1 style="color:white;font-size:22px;font-weight:700;margin:0 0 4px;">Poppy Wedding Gallery</h1>
-    <p style="color:rgba(255,255,255,0.65);font-size:13px;margin:0 0 32px;">Masukkan password untuk melanjutkan</p>
-    <div style="background:rgba(255,255,255,0.12);border-radius:16px;padding:24px;backdrop-filter:blur(12px);">
-      <div style="position:relative;margin-bottom:12px;">
-        <input id="auth-input" type="password" placeholder="Password" autocomplete="current-password"
-          style="width:100%;padding:14px 48px 14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.95);font-size:15px;outline:none;box-sizing:border-box;color:#1f2937;"
-          onkeydown="if(event.key==='Enter')doLogin()"
-          oninput="document.getElementById('auth-err').style.display='none'">
-        <span onclick="(function(){const i=document.getElementById('auth-input');i.type=i.type==='password'?'text':'password';})()" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:#9ca3af;font-size:16px;">
-          <i class="fas fa-eye"></i>
-        </span>
+<div id="auth-gate" style="display:none;position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#9f1239 0%,#be123c 50%,#e11d48 100%);overflow-y:auto;">
+  <div style="min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;">
+    <div style="width:100%;max-width:380px;text-align:center;">
+      <div style="width:72px;height:72px;background:rgba(255,255,255,0.15);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;backdrop-filter:blur(8px);">
+        <i class="fas fa-heart" style="font-size:32px;color:white;"></i>
       </div>
-      <p id="auth-err" style="display:none;color:#fca5a5;font-size:13px;margin:0 0 12px;">Password salah, coba lagi.</p>
-      <button onclick="doLogin()" style="width:100%;padding:14px;background:white;color:#be123c;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">
-        Masuk &nbsp;<i class="fas fa-arrow-right"></i>
-      </button>
+      <h1 style="color:white;font-size:22px;font-weight:700;margin:0 0 4px;">Poppy Wedding Gallery</h1>
+      <p id="gate-subtitle" style="color:rgba(255,255,255,0.65);font-size:13px;margin:0 0 24px;">Pilih akun kamu</p>
+
+      <!-- Step 1: User picker -->
+      <div id="gate-step1">
+        <div id="gate-users" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:8px;"></div>
+      </div>
+
+      <!-- Step 2: Password input -->
+      <div id="gate-step2" style="display:none;">
+        <div id="gate-selected-user" style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.12);border-radius:14px;padding:12px 16px;margin-bottom:16px;text-align:left;">
+          <div id="gate-avatar" style="width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:white;flex-shrink:0;"></div>
+          <div>
+            <div id="gate-uname" style="color:white;font-weight:700;font-size:15px;"></div>
+            <div id="gate-urole" style="color:rgba(255,255,255,0.6);font-size:12px;"></div>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,0.12);border-radius:16px;padding:20px;backdrop-filter:blur(12px);">
+          <div style="position:relative;margin-bottom:12px;">
+            <input id="auth-input" type="password" placeholder="Password" autocomplete="current-password"
+              style="width:100%;padding:14px 48px 14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.95);font-size:15px;outline:none;box-sizing:border-box;color:#1f2937;"
+              onkeydown="if(event.key==='Enter')doLogin()"
+              oninput="document.getElementById('auth-err').style.display='none'">
+            <span onclick="(function(){const i=document.getElementById('auth-input');i.type=i.type==='password'?'text':'password';})()" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:#9ca3af;font-size:16px;">
+              <i class="fas fa-eye"></i>
+            </span>
+          </div>
+          <p id="auth-err" style="display:none;color:#fca5a5;font-size:13px;margin:0 0 12px;text-align:left;">&#10060; Password salah, coba lagi.</p>
+          <button onclick="doLogin()" style="width:100%;padding:14px;background:white;color:#be123c;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;">
+            Masuk &nbsp;<i class="fas fa-arrow-right"></i>
+          </button>
+          <button onclick="gateBack()" style="width:100%;padding:10px;background:transparent;color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.3);border-radius:12px;font-size:13px;cursor:pointer;">
+            <i class="fas fa-arrow-left mr-1"></i> Ganti Akun
+          </button>
+        </div>
+      </div>
+
+      <p style="color:rgba(255,255,255,0.4);font-size:11px;margin-top:20px;">&#169; Poppy Wedding Gallery</p>
     </div>
-    <p style="color:rgba(255,255,255,0.4);font-size:11px;margin-top:24px;">© Poppy Wedding Gallery</p>
   </div>
 </div>
 
@@ -108,6 +130,7 @@
       <div id="mobile-page-title" class="font-semibold text-base leading-tight truncate">Beranda</div>
     </div>
     <div id="mobile-page-actions" class="flex items-center gap-1.5"></div>
+    <div id="hdr-user-avatar" onclick="navigate('settings')" style="display:none;width:28px;height:28px;border-radius:8px;flex-shrink:0;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;cursor:pointer;"></div>
     <div id="cloud-indicator" title="Status cloud sync" style="width:8px;height:8px;border-radius:50%;background:#fbbf24;flex-shrink:0;" title="Menghubungkan ke cloud..."></div>
   </div>
 </header>
@@ -256,7 +279,15 @@ const state = {
   page:'home',
   items:[], customers:[], orders:[], expenses:[],
   lists: JSON.parse(JSON.stringify(DEFAULT_LISTS)),
-  settings:{businessName:'',businessAddress:'',businessPhone:'',businessEmail:'',businessIG:'',adminPin:''},
+  settings:{businessName:'',businessAddress:'',businessPhone:'',businessEmail:'',businessIG:'',adminPin:'',
+    users:[
+      {id:'u1',name:'Ranin',role:'superadmin',password:'miminranin11',avatar:'R',color:'#be123c'},
+      {id:'u2',name:'Mbak Mul',role:'admin',password:'mul2024',avatar:'M',color:'#7c3aed'},
+      {id:'u3',name:'Poppy',role:'admin',password:'poppy2024',avatar:'P',color:'#0891b2'},
+      {id:'u4',name:'Ibu',role:'admin',password:'ibu2024',avatar:'I',color:'#059669'},
+      {id:'u5',name:'Bapak',role:'shareholder',password:'bapak2024',avatar:'B',color:'#d97706'},
+    ]
+  },
   ordersFilter:'all', ordersSearch:'',
   ordersDateFrom:'', ordersDateTo:'', ordersReturnDate:'',
   bookingsDateFrom:'', bookingsDateTo:'',
@@ -1458,6 +1489,10 @@ function handlePhotoInput(input){
 // ROUTER
 // ═══════════════════════════════════
 function navigate(page){
+  // Shareholder role: restrict to allowed pages only
+  if(_cu&&_cu.role==='shareholder'&&!SHAREHOLDER_PAGES.includes(page)){
+    page='dashboard';
+  }
   state.page=page;
   try{localStorage.setItem('rentalku_lastpage',page);}catch(e){};
   closeFabMenu();
@@ -2795,15 +2830,33 @@ function renderSettings(){
     <div class="mb-4 bg-rose-50 border border-rose-200 rounded-2xl p-4 text-sm text-rose-700">
       <i class="fas fa-info-circle mr-1.5"></i>Kelola semua pilihan dropdown. Warna dan Lokasi Rak bisa diatur di sini.
     </div>
-    <!-- Logout -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 bg-gray-100 text-gray-500 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-lock text-sm"></i></div>
-        <div><div class="font-semibold text-gray-800 text-sm">Keamanan Akun</div><div class="text-xs text-gray-400">Keluar dari sesi ini</div></div>
+    <!-- Akun & Keamanan -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-9 h-9 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-users text-sm"></i></div>
+        <div><div class="font-semibold text-gray-800 text-sm">Akun & Keamanan</div><div class="text-xs text-gray-400">Kelola pengguna dan password</div></div>
       </div>
-      <button onclick="if(confirm('Yakin mau keluar?'))doLogout()" class="px-4 py-2 bg-rose-600 text-white text-sm font-semibold rounded-xl hover:bg-rose-700">
-        <i class="fas fa-sign-out-alt mr-1.5"></i>Logout
-      </button>
+      ${(function(){
+        const users=_getUsers();
+        const isSA=_cu&&_cu.role==='superadmin';
+        return users.map(u=>{
+          const isMe=_cu&&_cu.id===u.id;
+          const canEdit=isSA||isMe;
+          return '<div class="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">'+
+            '<div style="width:36px;height:36px;border-radius:10px;background:'+u.color+';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;flex-shrink:0;">'+u.avatar+'</div>'+
+            '<div class="flex-1 min-w-0">'+
+              '<div class="text-sm font-semibold text-gray-800">'+u.name+(isMe?' <span class="text-xs font-normal text-rose-500">(kamu)</span>':'')+'</div>'+
+              '<div class="text-xs text-gray-400">'+(ROLE_LABELS[u.role]||u.role)+'</div>'+
+            '</div>'+
+            (canEdit?'<button onclick="openChangePassword(\''+u.id+'\')" class="text-xs text-rose-600 hover:underline font-medium"><i class="fas fa-key mr-1"></i>Ganti Password</button>':'<span class="text-xs text-gray-300">—</span>')+
+          '</div>';
+        }).join('');
+      })()}
+      <div class="mt-4 pt-3 border-t border-gray-100">
+        <button onclick="if(confirm('Yakin mau logout?'))doLogout()" class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl">
+          <i class="fas fa-sign-out-alt mr-1.5"></i>Logout dari Akun Ini
+        </button>
+      </div>
     </div>
     <!-- Backup & Restore -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
@@ -4856,35 +4909,131 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catc
 // Sync dari cloud (async, tidak blokir UI)
 DB.cloudLoad();
 
-// ===== PASSWORD GATE =====
+// ===== MULTI-USER AUTH =====
+var AUTH_KEY='_pwg_user';
+var ROLE_LABELS={superadmin:'Super Admin',admin:'Admin',shareholder:'Shareholder'};
+var SHAREHOLDER_PAGES=['dashboard','pemasukan','rekap'];
+var _cu=null; // current user object
+
+function _getUsers(){
+  return (state.settings&&state.settings.users)||[
+    {id:'u1',name:'Ranin',role:'superadmin',password:'miminranin11',avatar:'R',color:'#be123c'},
+    {id:'u2',name:'Mbak Mul',role:'admin',password:'mul2024',avatar:'M',color:'#7c3aed'},
+    {id:'u3',name:'Poppy',role:'admin',password:'poppy2024',avatar:'P',color:'#0891b2'},
+    {id:'u4',name:'Ibu',role:'admin',password:'ibu2024',avatar:'I',color:'#059669'},
+    {id:'u5',name:'Bapak',role:'shareholder',password:'bapak2024',avatar:'B',color:'#d97706'},
+  ];
+}
+
+function _renderGateUsers(){
+  const users=_getUsers();
+  const container=document.getElementById('gate-users');
+  if(!container)return;
+  container.innerHTML=users.map(u=>`
+    <div onclick="gateSelectUser('${u.id}')" style="background:rgba(255,255,255,0.12);border-radius:14px;padding:14px 8px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+      <div style="width:44px;height:44px;border-radius:12px;background:${u.color};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:white;margin:0 auto 8px;">${u.avatar}</div>
+      <div style="color:white;font-size:12px;font-weight:600;line-height:1.2;">${u.name}</div>
+      <div style="color:rgba(255,255,255,0.5);font-size:10px;margin-top:2px;">${ROLE_LABELS[u.role]||u.role}</div>
+    </div>`).join('');
+}
+
+let _selectedUserId=null;
+window.gateSelectUser=function(uid){
+  const u=_getUsers().find(x=>x.id===uid);
+  if(!u)return;
+  _selectedUserId=uid;
+  document.getElementById('gate-step1').style.display='none';
+  document.getElementById('gate-step2').style.display='block';
+  document.getElementById('gate-avatar').style.background=u.color;
+  document.getElementById('gate-avatar').textContent=u.avatar;
+  document.getElementById('gate-uname').textContent=u.name;
+  document.getElementById('gate-urole').textContent=ROLE_LABELS[u.role]||u.role;
+  document.getElementById('gate-subtitle').textContent='Masukkan password';
+  document.getElementById('auth-err').style.display='none';
+  document.getElementById('auth-input').value='';
+  setTimeout(()=>document.getElementById('auth-input')?.focus(),100);
+};
+window.gateBack=function(){
+  _selectedUserId=null;
+  document.getElementById('gate-step1').style.display='block';
+  document.getElementById('gate-step2').style.display='none';
+  document.getElementById('gate-subtitle').textContent='Pilih akun kamu';
+};
+
+function _showGate(){
+  const g=document.getElementById('auth-gate');
+  g.style.display='flex';
+  _renderGateUsers();
+}
+function _hideGate(){
+  document.getElementById('auth-gate').style.display='none';
+}
+function _applyUser(u){
+  _cu=u;
+  // Update header avatar
+  const av=document.getElementById('hdr-user-avatar');
+  if(av){av.style.display='flex';av.style.background=u.color;av.textContent=u.avatar;}
+  // Re-render sidebar to filter by role
+  _filterSidebar();
+}
+function _filterSidebar(){
+  if(!_cu)return;
+  const isSH=_cu.role==='shareholder';
+  document.querySelectorAll('.sidebar-item[data-page]').forEach(el=>{
+    const page=el.dataset.page;
+    const allowed=!isSH||SHAREHOLDER_PAGES.includes(page);
+    el.style.display=allowed?'':'none';
+  });
+  // Hide FAB for shareholder
+  const fab=document.getElementById('fab-btn');
+  if(fab)fab.style.display=isSH?'none':'';
+}
+
+// Check existing session
 (function(){
-  const AUTH_KEY='_pwg_ok';
-  const PWD=atob('bWltaW5yYW5pbg=='); // miminranin
-  function showGate(){
-    const g=document.getElementById('auth-gate');
-    g.style.display='flex';
-    setTimeout(()=>document.getElementById('auth-input')?.focus(),100);
-  }
-  function hideGate(){
-    document.getElementById('auth-gate').style.display='none';
-  }
-  if(localStorage.getItem(AUTH_KEY)!=='1')showGate();
-  window.doLogin=function(){
-    const val=document.getElementById('auth-input').value;
-    if(val===PWD){
-      localStorage.setItem(AUTH_KEY,'1');
-      hideGate();
-    } else {
-      document.getElementById('auth-err').style.display='block';
-      document.getElementById('auth-input').value='';
-      document.getElementById('auth-input').focus();
-    }
-  };
-  window.doLogout=function(){
-    localStorage.removeItem(AUTH_KEY);
-    location.reload();
-  };
+  const raw=localStorage.getItem(AUTH_KEY);
+  if(raw){try{const u=JSON.parse(raw);const found=_getUsers().find(x=>x.id===u.id);if(found){_applyUser(found);return;}}catch(_){}}
+  _showGate();
 })();
+
+window.doLogin=function(){
+  const users=_getUsers();
+  const u=users.find(x=>x.id===_selectedUserId);
+  if(!u)return;
+  const val=document.getElementById('auth-input').value;
+  if(val===u.password){
+    localStorage.setItem(AUTH_KEY,JSON.stringify({id:u.id,name:u.name,role:u.role}));
+    _applyUser(u);
+    _hideGate();
+    // Redirect shareholder to dashboard if on restricted page
+    if(u.role==='shareholder'&&!SHAREHOLDER_PAGES.includes(state.page)){
+      navigate('dashboard');
+    }
+  } else {
+    document.getElementById('auth-err').style.display='block';
+    document.getElementById('auth-input').value='';
+    document.getElementById('auth-input').focus();
+  }
+};
+window.doLogout=function(){
+  localStorage.removeItem(AUTH_KEY);
+  _cu=null;
+  location.reload();
+};
+window.getCurrentUser=function(){return _cu;};
+window.openChangePassword=function(uid){
+  const users=_getUsers();
+  const u=users.find(x=>x.id===uid);
+  if(!u)return;
+  const np=prompt('Ganti password untuk '+u.name+':\n(minimal 4 karakter)');
+  if(np===null)return;
+  if(np.length<4){alert('Password minimal 4 karakter!');return;}
+  u.password=np;
+  if(!state.settings.users)state.settings.users=users;
+  else {const idx=state.settings.users.findIndex(x=>x.id===uid);if(idx>=0)state.settings.users[idx].password=np;}
+  DB.save();
+  showToast('Password '+u.name+' berhasil diubah ✅');
+};
 </script>
 
 <!-- ===== BOTTOM NAV (mobile only) ===== -->
