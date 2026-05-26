@@ -169,9 +169,26 @@
     <div class="border-t border-rose-600 my-3"></div>
     <a onclick="navigate('settings');closeDrawer()" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors text-sm" data-page="settings"><i class="fas fa-sliders w-4 text-center text-rose-200"></i><span>Pengaturan</span></a>
   </nav>
-  <div class="p-4 border-t border-rose-600 text-rose-300 text-xs flex-shrink-0">
-    <div id="drawer-date"></div>
-    <div class="mt-1 text-rose-400">v3.0 · Data tersimpan lokal</div>
+  <!-- User card di bawah drawer -->
+  <div class="p-3 border-t border-rose-600 flex-shrink-0">
+    <div id="drawer-user-card" class="bg-rose-800/60 rounded-xl p-3 mb-2">
+      <div class="flex items-center gap-2.5">
+        <div id="drawer-avatar" style="width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;flex-shrink:0;background:#be123c;"></div>
+        <div class="flex-1 min-w-0">
+          <div id="drawer-uname" class="text-white text-sm font-semibold truncate">—</div>
+          <div id="drawer-urole" class="text-rose-300 text-xs">—</div>
+        </div>
+      </div>
+      <div class="flex gap-2 mt-2.5">
+        <button onclick="navigate('settings');closeDrawer()" class="flex-1 py-1.5 text-xs font-semibold text-white/80 bg-white/10 hover:bg-white/20 rounded-lg transition-colors">
+          <i class="fas fa-gear mr-1"></i>Pengaturan
+        </button>
+        <button onclick="closeDrawer();doLogout()" class="flex-1 py-1.5 text-xs font-semibold text-white/80 bg-white/10 hover:bg-white/20 rounded-lg transition-colors">
+          <i class="fas fa-right-from-bracket mr-1"></i>Logout
+        </button>
+      </div>
+    </div>
+    <div class="text-rose-400 text-xs text-center">v3.0 · Poppy Wedding Gallery</div>
   </div>
 </div>
 
@@ -206,9 +223,26 @@
       <div class="border-t border-rose-600 my-3"></div>
       <a onclick="navigate('settings')" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors text-sm" data-page="settings"><i class="fas fa-sliders w-4 text-center text-rose-200"></i><span>Pengaturan</span></a>
     </nav>
-    <div class="p-4 border-t border-rose-600 text-rose-300 text-xs">
-      <div id="sidebar-date"></div>
-      <div class="mt-1 text-rose-400">v3.0 · Data tersimpan lokal</div>
+    <!-- User card desktop sidebar -->
+    <div class="p-3 border-t border-rose-600 flex-shrink-0">
+      <div id="sidebar-user-card" class="bg-rose-800/60 rounded-xl p-3 mb-2">
+        <div class="flex items-center gap-2.5">
+          <div id="sidebar-avatar" style="width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0;background:#be123c;"></div>
+          <div class="flex-1 min-w-0">
+            <div id="sidebar-uname" class="text-white text-xs font-semibold truncate">—</div>
+            <div id="sidebar-urole" class="text-rose-300 text-xs">—</div>
+          </div>
+        </div>
+        <div class="flex gap-1.5 mt-2">
+          <button onclick="navigate('settings')" class="flex-1 py-1.5 text-xs font-semibold text-white/80 bg-white/10 hover:bg-white/20 rounded-lg transition-colors">
+            <i class="fas fa-gear mr-1"></i>Pengaturan
+          </button>
+          <button onclick="doLogout()" class="flex-1 py-1.5 text-xs font-semibold text-white/80 bg-white/10 hover:bg-white/20 rounded-lg transition-colors">
+            <i class="fas fa-right-from-bracket mr-1"></i>Logout
+          </button>
+        </div>
+      </div>
+      <div class="text-rose-400 text-xs text-center">v3.0 · Poppy Wedding Gallery</div>
     </div>
   </aside>
 
@@ -4880,6 +4914,13 @@ function updateDueBadge(){
 // ═══════════════════════════════════
 // INIT
 // ═══════════════════════════════════
+// Auth globals HARUS diinisialisasi SEBELUM navigate() pertama dipanggil,
+// karena renderSettings() langsung mengakses ROLE_LABELS di template literalnya.
+var AUTH_KEY='_pwg_user';
+var ROLE_LABELS={superadmin:'Super Admin',admin:'Admin',shareholder:'Shareholder'};
+var SHAREHOLDER_PAGES=['dashboard','pemasukan','rekap'];
+var _cu=null; // current user object
+
 document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
 document.getElementById('sidebar-date').textContent=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 DB.load();
@@ -4909,11 +4950,6 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catc
 DB.cloudLoad();
 
 // ===== MULTI-USER AUTH =====
-var AUTH_KEY='_pwg_user';
-var ROLE_LABELS={superadmin:'Super Admin',admin:'Admin',shareholder:'Shareholder'};
-var SHAREHOLDER_PAGES=['dashboard','pemasukan','rekap'];
-var _cu=null; // current user object
-
 function _getUsers(){
   return (state.settings&&state.settings.users)||[
     {id:'u1',name:'Ranin',role:'superadmin',password:'miminranin11',avatar:'R',color:'#be123c'},
@@ -4969,10 +5005,25 @@ function _hideGate(){
 }
 function _applyUser(u){
   _cu=u;
-  // Update header avatar
+  const roleLabel=ROLE_LABELS[u.role]||u.role;
+  // Header avatar (mobile)
   const av=document.getElementById('hdr-user-avatar');
   if(av){av.style.display='flex';av.style.background=u.color;av.textContent=u.avatar;}
-  // Re-render sidebar to filter by role
+  // Drawer user card (mobile)
+  const da=document.getElementById('drawer-avatar');
+  const dn=document.getElementById('drawer-uname');
+  const dr=document.getElementById('drawer-urole');
+  if(da){da.style.background=u.color;da.textContent=u.avatar;}
+  if(dn)dn.textContent=u.name;
+  if(dr)dr.textContent=roleLabel;
+  // Sidebar user card (desktop)
+  const sa=document.getElementById('sidebar-avatar');
+  const sn=document.getElementById('sidebar-uname');
+  const sr=document.getElementById('sidebar-urole');
+  if(sa){sa.style.background=u.color;sa.textContent=u.avatar;}
+  if(sn)sn.textContent=u.name;
+  if(sr)sr.textContent=roleLabel;
+  // Filter sidebar by role
   _filterSidebar();
 }
 function _filterSidebar(){
