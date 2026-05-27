@@ -4961,7 +4961,7 @@ DB.load();
 (function(){
   const skip=['new-order','new-booking','edit-booking'];
   const last=localStorage.getItem('rentalku_lastpage');
-  navigate(last&&!skip.includes(last)?last:'home');
+  try{navigate(last&&!skip.includes(last)?last:'home');}catch(e){try{navigate('home');}catch(_){}}
 })();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}
 
@@ -4991,8 +4991,8 @@ function _renderGateUsers(){
     </div>`).join('');
 }
 
-let _selectedUserId=null;
-window.gateSelectUser=function(uid){
+var _selectedUserId=null;
+function gateSelectUser(uid){
   const u=_getUsers().find(x=>x.id===uid);
   if(!u)return;
   _selectedUserId=uid;
@@ -5006,13 +5006,13 @@ window.gateSelectUser=function(uid){
   document.getElementById('auth-err').style.display='none';
   document.getElementById('auth-input').value='';
   setTimeout(()=>document.getElementById('auth-input')?.focus(),100);
-};
-window.gateBack=function(){
+}
+function gateBack(){
   _selectedUserId=null;
   document.getElementById('gate-step1').style.display='block';
   document.getElementById('gate-step2').style.display='none';
   document.getElementById('gate-subtitle').textContent='Pilih akun kamu';
-};
+}
 
 function _showGate(){
   const g=document.getElementById('auth-gate');
@@ -5061,7 +5061,7 @@ function _filterSidebar(){
 // Selalu tampilkan gate saat buka app — tidak ada auto-login
 _showGate();
 
-window.doLogin=function(){
+function doLogin(){
   const users=_getUsers();
   const u=users.find(x=>x.id===_selectedUserId);
   if(!u)return;
@@ -5070,7 +5070,6 @@ window.doLogin=function(){
     localStorage.setItem(AUTH_KEY,JSON.stringify({id:u.id,name:u.name,role:u.role}));
     _applyUser(u);
     _hideGate();
-    // Redirect shareholder to dashboard if on restricted page
     if(u.role==='shareholder'&&!SHAREHOLDER_PAGES.includes(state.page)){
       navigate('dashboard');
     }
@@ -5079,13 +5078,12 @@ window.doLogin=function(){
     document.getElementById('auth-input').value='';
     document.getElementById('auth-input').focus();
   }
-};
-window.doLogout=function(){
+}
+function doLogout(){
   localStorage.removeItem(AUTH_KEY);
   location.reload();
-};
-window.getCurrentUser=function(){return _cu;};
-window.openChangePassword=function(uid){
+}
+function openChangePassword(uid){
   const users=_getUsers();
   const u=users.find(x=>x.id===uid);
   if(!u)return;
@@ -5097,7 +5095,7 @@ window.openChangePassword=function(uid){
   else {const idx=state.settings.users.findIndex(x=>x.id===uid);if(idx>=0)state.settings.users[idx].password=np;}
   DB.save();
   showToast('Password '+u.name+' berhasil diubah ✅');
-};
+}
 </script>
 
 <!-- ===== BOTTOM NAV (mobile only) ===== -->
