@@ -348,6 +348,7 @@ const state = {
 // STORAGE
 // ═══════════════════════════════════
 // ── Supabase cloud sync ──
+const IS_DEV=location.hostname==='localhost'||location.hostname==='127.0.0.1';
 const SUPA_URL='https://fiutfrocbwkymnysmezf.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpdXRmcm9jYndreW1ueXNtZXpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MDI1ODYsImV4cCI6MjA5NTM3ODU4Nn0.InxGNSsb_iis3t6RKl2s6UDClUCsp5FhsDUIrXO_sWY';
 const SUPA_HDR={'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'};
@@ -377,7 +378,8 @@ const DB = {
     try{
       const snap=this._snapshot();
       localStorage.setItem(this.KEY, JSON.stringify(snap));
-      // Push ke cloud (fire & forget)
+      // Push ke cloud hanya di production (bukan localhost)
+      if(IS_DEV){_setCloudDot('off');return;}
       _setCloudDot('sync');
       fetch(SUPA_URL+'/rest/v1/app_data',{
         method:'POST',
@@ -387,6 +389,8 @@ const DB = {
     } catch(e){ showToast('Storage penuh! Hapus beberapa foto item.','t-err',5000); }
   },
   async cloudLoad(){
+    // Di dev (localhost) tidak sync cloud — data dev & production terpisah
+    if(IS_DEV){_setCloudDot('off');return;}
     try{
       const r=await fetch(SUPA_URL+'/rest/v1/app_data?id=eq.main&select=data,updated_at',{headers:SUPA_HDR});
       if(!r.ok)return;
